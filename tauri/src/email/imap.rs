@@ -202,43 +202,14 @@ async fn fetch_unseen(app: &AppHandle, session: &mut ImapSession, email: &str) -
 
   use futures_util::TryStreamExt as _;
 
-  // First pass: fetch headers only to filter for Chat-Version messages.
-  // Collect into Vec first so the stream (and its session borrow) is fully dropped
-  // before we open the second fetch.
-  let chat_uids: Vec<u32> = {
-    let mut header_msgs = session
-      .uid_fetch(&uid_set, "BODY.PEEK[HEADER]")
-      .await
-      .map_err(|e| format!("UID FETCH HEADER: {e}"))?;
-
-    let mut found: Vec<u32> = Vec::new();
-    while let Some(msg) = header_msgs.try_next().await.map_err(|e| format!("Fetch header: {e}"))? {
-      if let Some(uid) = msg.uid {
-        if let Some(header_bytes) = msg.header() {
-          let header_str = String::from_utf8_lossy(header_bytes);
-          let unfolded = unfold_headers(&header_str);
-          if unfolded.to_ascii_lowercase().contains("chat-version:") {
-            found.push(uid);
-          }
-        }
-      }
-    }
-    found
-    // header_msgs (and its borrow of session) is dropped here
-  };
-
-  if chat_uids.is_empty() {
-    return Ok(());
-  }
-
-  // Second pass: fetch full body only for Chat messages.
-  let chat_uid_set = chat_uids.iter().map(|u| u.to_string()).collect::<Vec<_>>().join(",");
-  let mut full_msgs = session
-    .uid_fetch(&chat_uid_set, "RFC822")
+  // Single-pass: fetch full RFC822 and filter by Chat-Version locally.
+  // This saves one full round-trip compared to a two-pass header+body approach.
+  let mut msgs = session
+    .uid_fetch(&uid_set, "RFC822")
     .await
     .map_err(|e| format!("UID FETCH RFC822: {e}"))?;
 
-  while let Some(msg) = full_msgs.try_next().await.map_err(|e| format!("Fetch body: {e}"))? {
+  while let Some(msg) = msgs.try_next().await.map_err(|e| format!("Fetch body: {e}"))? {
     if let Some(raw) = msg.body() {
       parse_and_emit(app, raw, email, db_path.as_deref()).await;
     }
