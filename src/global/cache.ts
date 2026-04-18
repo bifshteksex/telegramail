@@ -380,6 +380,12 @@ function unsafeMigrateCache(cached: GlobalState, initialState: GlobalState) {
     cached.chats.listIds = initialState.chats.listIds;
   }
 
+  if (cached.cacheVersion < 4) {
+    cached.cacheVersion = 4;
+    // smtpPassword must not persist in IndexedDB — moved to OS keychain
+    delete (untypedCached.settings?.byKey as any)?.smtpPassword;
+  }
+
   if (!cached.auth) {
     cached.auth = initialState.auth;
     cached.auth.rememberMe = untypedCached.rememberMe;
@@ -484,6 +490,9 @@ function reduceGlobal<T extends GlobalState>(global: T) {
       'invalidAttemptsCount',
       'timeoutUntil',
     ]),
+    emailContacts: global.emailContacts,
+    emailChats: global.emailChats,
+    emailMessages: global.emailMessages,
   };
 
   return reducedGlobal;

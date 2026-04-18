@@ -46,6 +46,7 @@ type OwnProps = {
   onSelectSettings: NoneToVoidFunction;
   onSelectContacts: NoneToVoidFunction;
   onSelectArchived: NoneToVoidFunction;
+  onSelectSmtpMode: NoneToVoidFunction;
   onBotMenuOpened: NoneToVoidFunction;
   onBotMenuClosed: NoneToVoidFunction;
   footer?: string;
@@ -72,6 +73,7 @@ const LeftSideMenuItems = ({
   onSelectArchived,
   onSelectContacts,
   onSelectSettings,
+  onSelectSmtpMode,
   onBotMenuOpened,
   onBotMenuClosed,
   footer,
@@ -200,6 +202,14 @@ const LeftSideMenuItems = ({
       >
         {lang('MenuSettings')}
       </MenuItem>
+      {IS_TAURI && (
+        <MenuItem
+          icon="email"
+          onClick={onSelectSmtpMode}
+        >
+          {lang('SmtpModeTitle')}
+        </MenuItem>
+      )}
       <NestedMenuItem
         icon="more"
         footer={footer}

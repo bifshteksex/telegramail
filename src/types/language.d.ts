@@ -2096,6 +2096,20 @@ export interface LangPair {
   'AiMessageEditorTo': undefined;
   'TranslationToneNeutral': undefined;
   'ButtonHelp': undefined;
+  'SmtpSettings': undefined;
+  'SmtpEmailAddress': undefined;
+  'SmtpPassword': undefined;
+  'SmtpConnect': undefined;
+  'SmtpProvider': undefined;
+  'SmtpProviderGmail': undefined;
+  'SmtpProviderYandex': undefined;
+  'SmtpProviderMailRu': undefined;
+  'SmtpProviderOutlook': undefined;
+  'SmtpProviderCustom': undefined;
+  'SmtpConnecting': undefined;
+  'SmtpConnectSuccess': undefined;
+  'SmtpConnectErrorVpn': undefined;
+  'SmtpConnectedBadge': undefined;
 }
 
 export interface LangPairWithVariables<V = LangVariable> {
@@ -3684,6 +3698,9 @@ export interface LangPairWithVariables<V = LangVariable> {
   };
   'UnofficialSecurityRisk': {
     'peer': V;
+  };
+  'SmtpConnectError': {
+    'error': V;
   };
 }
 

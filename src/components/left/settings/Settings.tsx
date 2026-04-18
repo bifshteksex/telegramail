@@ -39,6 +39,7 @@ import SettingsPrivacyVisibility from './SettingsPrivacyVisibility';
 import SettingsPrivacyVisibilityExceptionList from './SettingsPrivacyVisibilityExceptionList';
 import SettingsQuickReaction from './SettingsQuickReaction';
 import SettingsStickers from './SettingsStickers';
+import SettingsSmtp from './SettingsSmtp';
 import SettingsTwoFa from './twoFa/SettingsTwoFa';
 
 import './Settings.scss';
@@ -303,6 +304,10 @@ const Settings: FC<OwnProps> = ({
       case SettingsScreens.Stickers:
         return (
           <SettingsStickers isActive={isScreenActive} onReset={handleReset} />
+        );
+      case SettingsScreens.SmtpSettings:
+        return (
+          <SettingsSmtp isActive={isScreenActive} onReset={handleReset} />
         );
       case SettingsScreens.Experimental:
         return (

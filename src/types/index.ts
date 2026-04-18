@@ -170,6 +170,10 @@ export interface AccountSettings {
   translationLanguage?: string;
   doNotTranslate: string[];
   shouldPaidMessageAutoApprove: boolean;
+  smtpProvider?: string;
+  smtpEmail?: string;
+  smtpPort?: number;
+  emailConnectionStatus?: 'connected' | 'reconnecting' | 'disconnected';
 }
 
 export type IAnchorPosition = {
@@ -277,6 +281,7 @@ export enum SettingsScreens {
   DoNotTranslate,
   FoldersShare,
   Passkeys,
+  SmtpSettings,
 }
 
 export type StickerSetOrReactionsSetOrRecent = Pick<ApiStickerSet, (

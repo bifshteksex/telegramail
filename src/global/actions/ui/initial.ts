@@ -4,6 +4,9 @@ import type { ApiNotification } from '../../../api/types';
 import type { LangCode } from '../../../types';
 import type { ActionReturnType, GlobalState } from '../../types';
 
+import { initEmailEventListener } from '../../../api/email/emailEventListener';
+import { SMTP_PROVIDERS } from '../../../config/smtpProviders';
+
 import { requestMutation } from '../../../lib/fasterdom/fasterdom';
 import { IS_ELECTRON, IS_MULTIACCOUNT_SUPPORTED, IS_TAURI } from '../../../util/browser/globalEnvironment';
 import {
@@ -192,6 +195,22 @@ addCallback((global: GlobalState) => {
   global = updateSharedSettings(global, { theme });
 
   startWebsync();
+
+  // Start email event listener and auto-start IMAP if SMTP already configured.
+  initEmailEventListener();
+  if (IS_TAURI) {
+    const { smtpEmail, smtpProvider } = global.settings.byKey;
+    if (smtpEmail && smtpProvider) {
+      const config = SMTP_PROVIDERS[smtpProvider];
+      if (config) {
+        void window.tauri.imapStartWatch({
+          email: smtpEmail,
+          imapHost: config.imapHost,
+          imapPort: config.imapPort,
+        });
+      }
+    }
+  }
 
   setGlobal(global);
 });

@@ -40,6 +40,7 @@ import { isUserId } from '../../util/entities/ids';
 
 import useAppLayout from '../../hooks/useAppLayout';
 import useConnectionStatus from '../../hooks/useConnectionStatus';
+import useLang from '../../hooks/useLang';
 import useLastCallback from '../../hooks/useLastCallback';
 import useLongPress from '../../hooks/useLongPress';
 import useOldLang from '../../hooks/useOldLang';
@@ -89,6 +90,7 @@ type StateProps = {
   isFetchingDifference?: boolean;
   emojiStatusSticker?: ApiSticker;
   emojiStatusSlug?: string;
+  isSmtpConnected?: boolean;
 };
 
 const MiddleHeader: FC<OwnProps & StateProps> = ({
@@ -114,6 +116,7 @@ const MiddleHeader: FC<OwnProps & StateProps> = ({
   emojiStatusSticker,
   emojiStatusSlug,
   isSavedDialog,
+  isSmtpConnected,
   onFocusPinnedMessage,
 }) => {
   const {
@@ -129,6 +132,7 @@ const MiddleHeader: FC<OwnProps & StateProps> = ({
   } = getActions();
 
   const lang = useOldLang();
+  const newLang = useLang();
   const isBackButtonActiveRef = useRef(true);
   const { isDesktop, isTablet } = useAppLayout();
 
@@ -266,6 +270,11 @@ const MiddleHeader: FC<OwnProps & StateProps> = ({
     return (
       <>
         {(isLeftColumnHideable || currentTransitionKey > 0) && renderBackButton(shouldShowCloseButton, !isSavedDialog)}
+        {isSmtpConnected && connectionStatusText && (
+          <span className="smtp-status-badge">
+            {newLang('SmtpConnectedBadge')}
+          </span>
+        )}
         <div
           className="chat-info-wrapper"
           onMouseDown={handleLongPressMouseDown}
@@ -424,6 +433,7 @@ export default memo(withGlobal<OwnProps>(
       emojiStatusSticker,
       emojiStatusSlug,
       isSavedDialog,
+      isSmtpConnected: Boolean(global.settings.byKey.smtpEmail),
     };
   },
 )(MiddleHeader));

@@ -3154,6 +3154,42 @@ export interface ActionPayloads {
 
   requestMessageMediaEditor: WithTabId | undefined;
   resetMessageMediaEditorRequest: WithTabId | undefined;
+
+  // Email / SMTP mode
+  sendEmailContactRequest: {
+    toEmail: string;
+    smtpHost: string;
+    displayName: string;
+  };
+  acceptEmailContactRequest: {
+    fromEmail: string;
+    fromDisplayName: string;
+    smtpHost: string;
+    displayName: string;
+  };
+  receiveEmailHandshake: {
+    kind: 'request' | 'accept';
+    from: string;
+    displayName?: string;
+  };
+  receiveEmailMessage: {
+    from: string;
+    text: string;
+    messageId: string;
+  };
+  sendEmailMessage: {
+    chatId: string;
+    text: string;
+  };
+  markEmailChatRead: {
+    chatId: string;
+  };
+  setEmailConnectionStatus: {
+    status: 'connected' | 'reconnecting' | 'disconnected';
+    error?: string;
+  };
+  openSmtpMode: undefined;
+  closeSmtpMode: undefined;
 }
 
 export interface RequiredActionPayloads {

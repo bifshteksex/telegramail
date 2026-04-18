@@ -9,6 +9,8 @@ use uuid::Uuid;
 mod deeplink;
 use deeplink::Deeplink;
 
+mod email;
+
 mod tray;
 mod window;
 use crate::window::{WINDOW_STATES, WindowState};
@@ -56,7 +58,7 @@ pub static LAST_URL: LazyLock<std::sync::Mutex<String>> =
 
 pub const DEFAULT_WINDOW_TITLE: &str = match std::option_env!("APP_TITLE") {
   Some(title) => title,
-  None => "Telegram Air",
+  None => "Telegramail",
 };
 
 pub const BASE_URL: &str = match std::option_env!("BASE_URL") {
@@ -181,7 +183,18 @@ pub fn run() {
     set_window_title,
     open_new_window_cmd,
     save_current_url,
-    set_menu_translations
+    set_menu_translations,
+    email::smtp::smtp_check,
+    email::smtp::smtp_send,
+    email::credentials::smtp_save_credentials,
+    email::credentials::smtp_load_credentials,
+    email::credentials::smtp_delete_credentials,
+    email::credentials::smtp_get_public_key,
+    email::credentials::smtp_import_autocrypt,
+    email::imap::imap_start_watch,
+    email::imap::imap_stop_watch,
+    email::handshake::handshake_send_request,
+    email::handshake::handshake_accept
   ]);
 
   app

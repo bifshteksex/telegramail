@@ -102,7 +102,7 @@ export const INITIAL_SHARED_STATE: SharedState = {
 };
 
 export const INITIAL_GLOBAL_STATE: GlobalState = {
-  cacheVersion: 3,
+  cacheVersion: 4,
   isInited: true,
   attachMenu: { bots: {} },
   passcode: {},
@@ -313,6 +313,9 @@ export const INITIAL_GLOBAL_STATE: GlobalState = {
       canTranslate: false,
       canTranslateChats: true,
       doNotTranslate: [],
+      smtpProvider: undefined,
+      smtpEmail: undefined,
+      smtpPort: undefined,
     },
     privacy: {},
     botVerificationShownPeerIds: [],
@@ -343,6 +346,16 @@ export const INITIAL_GLOBAL_STATE: GlobalState = {
   archiveSettings: {
     isMinimized: false,
     isHidden: false,
+  },
+
+  emailContacts: {
+    byEmail: {},
+  },
+  emailChats: {
+    byId: {},
+  },
+  emailMessages: {
+    byChatId: {},
   },
 };
 

@@ -124,6 +124,7 @@ export type TabState = {
   canInstall?: boolean;
   isStatisticsShown?: boolean;
   isLeftColumnShown: boolean;
+  isSmtpMode?: boolean;
   newChatMembersProgress?: NewChatMembersProgress;
   uiReadyState: 0 | 1 | 2;
   shouldInit: boolean;

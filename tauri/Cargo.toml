@@ -1,7 +1,7 @@
  [package]
-name = "telegram_air"
+name = "telegramail"
 version = "2.10.3"
-description = "Telegram Air"
+description = "Telegramail"
 authors = ["Alexander Zinchuk"]
 license = "GPLv3"
 repository = "https://github.com/Ajaxy/telegram-tt"
@@ -32,6 +32,20 @@ image      = "0.25.10"
 imageproc  = "0.26.1"
 ab_glyph   = "0.2.32"
 tauri-plugin-os = "2.3.2"
+keyring = { version = "3", features = ["windows-native", "apple-native", "sync-secret-service"] }
+lettre = { version = "0.11", default-features = false, features = ["smtp-transport", "native-tls", "tokio1", "tokio1-native-tls", "builder"] }
+native-tls = "0.2"
+tokio = { version = "1", features = ["time", "net", "rt-multi-thread", "macros"] }
+reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "json"] }
+base64 = "0.22"
+pgp = { version = "0.14", default-features = false }
+rusqlite = { version = "0.32", features = ["bundled"] }
+chrono = { version = "0.4", default-features = false, features = ["clock"] }
+rand = "0.8"
+smallvec = "1"
+async-imap = { version = "0.10", default-features = false, features = ["runtime-tokio"] }
+async-native-tls = { version = "0.5", default-features = false, features = ["runtime-tokio"] }
+futures-util = { version = "0.3", default-features = false, features = ["alloc"] }
 
 [target."cfg(any(target_os = \"macos\", windows, target_os = \"linux\"))".dependencies]
 tauri-plugin-single-instance = { version = "2.4.0", features = ["deep-link"] }

@@ -29,7 +29,7 @@ const LeftSideMenuDropdown = ({
   shouldHideSearch,
   className,
 }: OwnProps) => {
-  const { openLeftColumnContent, closeForumPanel, openSettingsScreen } = getActions();
+  const { openLeftColumnContent, closeForumPanel, openSettingsScreen, openSmtpMode } = getActions();
   const [isBotMenuOpen, markBotMenuOpen, unmarkBotMenuOpen] = useFlag();
   const lang = useLang();
 
@@ -54,6 +54,10 @@ const LeftSideMenuDropdown = ({
     closeForumPanel();
   });
 
+  const handleSelectSmtpMode = useLastCallback(() => {
+    openSmtpMode();
+  });
+
   return (
     <DropdownMenu
       trigger={trigger}
@@ -74,6 +78,7 @@ const LeftSideMenuDropdown = ({
         onSelectArchived={handleSelectArchived}
         onSelectContacts={handleSelectContacts}
         onSelectSettings={handleSelectSettings}
+        onSelectSmtpMode={handleSelectSmtpMode}
         onBotMenuOpened={markBotMenuOpen}
         onBotMenuClosed={unmarkBotMenuOpen}
         footer={`${APP_NAME} ${versionString}`}

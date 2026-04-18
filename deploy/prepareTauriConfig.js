@@ -8,7 +8,7 @@ export default function prepareTauriConfig() {
     bundle: {
       windows: {},
     },
-    identifier: 'org.telegram.TelegramAir',
+    identifier: 'org.telegramail.Telegramail',
   };
 
   if (process.env.WITH_UPDATER === 'true') {

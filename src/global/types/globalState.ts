@@ -1,3 +1,5 @@
+import type { EmailChat, EmailContact, EmailMessage } from '../../types/email';
+
 import type {
   ApiAppConfig,
   ApiAttachBot,
@@ -488,6 +490,16 @@ export type GlobalState = {
   ton?: {
     balance: ApiTonAmount;
     history: StarsTransactionHistory;
+  };
+
+  emailContacts: {
+    byEmail: Record<string, EmailContact>;
+  };
+  emailChats: {
+    byId: Record<string, EmailChat>;
+  };
+  emailMessages: {
+    byChatId: Record<string, Record<string, EmailMessage>>;
   };
 };
 

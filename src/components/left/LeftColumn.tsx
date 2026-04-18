@@ -34,6 +34,7 @@ import ArchivedChats from './ArchivedChats.async';
 import LeftMain from './main/LeftMain';
 import NewChat from './newChat/NewChat.async';
 import Settings from './settings/Settings.async';
+import SmtpMode from './smtp/SmtpMode';
 
 import './LeftColumn.scss';
 
@@ -61,6 +62,7 @@ type StateProps = {
   archiveSettings: GlobalState['archiveSettings'];
   isArchivedStoryRibbonShown?: boolean;
   isAccountFrozen?: boolean;
+  isSmtpMode?: boolean;
 };
 
 enum ContentType {
@@ -99,6 +101,7 @@ function LeftColumn({
   isArchivedStoryRibbonShown,
   isAccountFrozen,
   isFoldersSidebarShown,
+  isSmtpMode,
 }: OwnProps & StateProps) {
   const {
     setGlobalSearchQuery,
@@ -189,6 +192,7 @@ function LeftColumn({
         case SettingsScreens.Language:
         case SettingsScreens.Stickers:
         case SettingsScreens.Experimental:
+        case SettingsScreens.SmtpSettings:
           openSettingsScreen({ screen: SettingsScreens.Main });
           return;
 
@@ -560,6 +564,10 @@ function LeftColumn({
     }
   }
 
+  if (isSmtpMode) {
+    return <SmtpMode />;
+  }
+
   return (
     <Transition
       ref={ref}
@@ -629,6 +637,7 @@ export default memo(withGlobal<OwnProps>(
       isAccountFrozen,
       contentKey: leftColumn.contentKey,
       settingsScreen: leftColumn.settingsScreen,
+      isSmtpMode: tabState.isSmtpMode,
     };
   },
 )(LeftColumn));

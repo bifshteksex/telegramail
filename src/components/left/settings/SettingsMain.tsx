@@ -171,6 +171,14 @@ const SettingsMain: FC<OwnProps & StateProps> = ({
         >
           {lang('MenuStickers')}
         </ListItem>
+        <ListItem
+          icon="mention"
+          narrow
+
+          onClick={() => openSettingsScreen({ screen: SettingsScreens.SmtpSettings })}
+        >
+          {lang('SmtpSettings')}
+        </ListItem>
       </div>
       <div className="settings-main-menu">
         {canBuyPremium && (
