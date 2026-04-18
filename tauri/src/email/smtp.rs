@@ -194,12 +194,25 @@ pub async fn smtp_send(
     recipient_public_key: recipient_public_key.as_deref(),
   }) {
     Ok(m) => m,
-    Err(e) => return SmtpResult::err(e),
+    Err(e) => {
+      log::error!("[smtp_send] build_chat_message failed: {e}");
+      return SmtpResult::err(e);
+    }
   };
 
+  log::info!("[smtp_send] connecting to {host}:{port} to send → {to_email}");
   match timeout(CONNECT_TIMEOUT, transport.send(message)).await {
-    Err(_) => SmtpResult::err("Send timed out (10s)"),
-    Ok(Ok(_)) => SmtpResult::ok(),
-    Ok(Err(e)) => SmtpResult::err(format!("{e}")),
+    Err(_) => {
+      log::error!("[smtp_send] timed out sending to {host}:{port}");
+      SmtpResult::err("Send timed out (10s)")
+    }
+    Ok(Ok(response)) => {
+      log::info!("[smtp_send] sent OK: {response:?}");
+      SmtpResult::ok()
+    }
+    Ok(Err(e)) => {
+      log::error!("[smtp_send] SMTP error: {e}");
+      SmtpResult::err(format!("{e}"))
+    }
   }
 }

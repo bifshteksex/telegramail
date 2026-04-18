@@ -191,7 +191,7 @@ addActionHandler('sendEmailMessage', async (global, actions, payload): Promise<v
   setGlobal(global);
 
   try {
-    await window.tauri.smtpSend({
+    const result = await window.tauri.smtpSend({
       host: providerConfig.host,
       email: smtpEmail,
       toEmail: chat.email,
@@ -200,8 +200,13 @@ addActionHandler('sendEmailMessage', async (global, actions, payload): Promise<v
       localRef: messageId,
       text,
     });
-  } catch {
-    // Fire-and-forget
+    if (!result.ok) {
+      // eslint-disable-next-line no-console
+      console.error('[sendEmailMessage] smtp_send error:', result.error);
+    }
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.error('[sendEmailMessage] invoke error:', e);
   }
 });
 

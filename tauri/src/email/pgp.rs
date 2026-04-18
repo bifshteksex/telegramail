@@ -142,14 +142,23 @@ pub fn parse_autocrypt_header(value: &str) -> Result<(String, String), String> {
 /// Encrypt `plaintext` to `recipient_armored_pubkey`.
 /// Returns PGP/ASCII-armored ciphertext.
 pub fn encrypt(plaintext: &str, recipient_armored_pubkey: &str) -> Result<String, String> {
+  use pgp::types::PublicKeyTrait;
+
   let (signed_pub, _) = pgp::composed::SignedPublicKey::from_string(recipient_armored_pubkey)
     .map_err(|e| format!("Parse recipient key: {e}"))?;
+
+  // Use the X25519 encryption subkey, not the primary Ed25519 signing key.
+  let enc_subkey = signed_pub
+    .public_subkeys
+    .iter()
+    .find(|sk| sk.is_encryption_key())
+    .ok_or_else(|| "Recipient key has no encryption subkey".to_owned())?;
 
   let lit = Message::new_literal("msg.txt", plaintext);
 
   let mut rng = rand::thread_rng();
   let encrypted = lit
-    .encrypt_to_keys_seipdv1(&mut rng, SymmetricKeyAlgorithm::AES256, &[&signed_pub])
+    .encrypt_to_keys_seipdv1(&mut rng, SymmetricKeyAlgorithm::AES256, &[enc_subkey])
     .map_err(|e| format!("Encrypt error: {e}"))?;
 
   encrypted

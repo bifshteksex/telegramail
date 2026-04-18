@@ -3,8 +3,6 @@ use keyring::Entry;
 const SERVICE: &str = "telegram-air";
 const SMTP_PASSWORD_ACCOUNT: &str = "smtp-password";
 const SMTP_PORT_ACCOUNT: &str = "smtp-port";
-const SMTP_HOST_ACCOUNT: &str = "smtp-host";
-
 pub fn save_smtp_password(email: &str, password: &str) -> Result<(), String> {
   let account = format!("{}:{}", SMTP_PASSWORD_ACCOUNT, email);
   let entry = Entry::new(SERVICE, &account).map_err(|e| e.to_string())?;
@@ -36,14 +34,3 @@ pub fn load_smtp_port(email: &str) -> Result<u16, String> {
   raw.parse::<u16>().map_err(|e| e.to_string())
 }
 
-pub fn save_smtp_host(email: &str, host: &str) -> Result<(), String> {
-  let account = format!("{}:{}", SMTP_HOST_ACCOUNT, email);
-  let entry = Entry::new(SERVICE, &account).map_err(|e| e.to_string())?;
-  entry.set_password(host).map_err(|e| e.to_string())
-}
-
-pub fn load_smtp_host(email: &str) -> Result<String, String> {
-  let account = format!("{}:{}", SMTP_HOST_ACCOUNT, email);
-  let entry = Entry::new(SERVICE, &account).map_err(|e| e.to_string())?;
-  entry.get_password().map_err(|e| e.to_string())
-}
