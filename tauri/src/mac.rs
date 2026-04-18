@@ -84,7 +84,7 @@ pub fn setup_traffic_light_positioner<R: Runtime>(
   use cocoa::delegate;
   use cocoa::foundation::NSUInteger;
   use objc::runtime::{Object, Sel};
-  use rand::distr::{Alphanumeric, Distribution};
+  use rand::distributions::{Alphanumeric, Distribution};
   use std::ffi::c_void;
 
   position_traffic_lights(
@@ -325,7 +325,7 @@ pub fn setup_traffic_light_positioner<R: Runtime>(
     };
     let app_box = Box::into_raw(Box::new(app_state)) as *mut c_void;
     let random_str: String = Alphanumeric
-      .sample_iter(rand::rng())
+      .sample_iter(rand::thread_rng())
       .take(20)
       .map(char::from)
       .collect();
