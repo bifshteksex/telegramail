@@ -188,12 +188,11 @@ async fn fetch_unseen(app: &AppHandle, session: &mut ImapSession, email: &str) -
     return Ok(());
   }
 
-  let uid_set = uids.iter().map(|u: &u32| u.to_string()).collect::<Vec<_>>().join(",");
-
-  let mut messages = session
-    .uid_fetch(&uid_set, "RFC822")
-    .await
-    .map_err(|e| format!("UID FETCH: {e}"))?;
+  // Limit to the 50 highest (most recent) UIDs to avoid downloading gigabytes on first connect.
+  let mut uid_vec: Vec<u32> = uids.into_iter().collect();
+  uid_vec.sort_unstable();
+  let uids_to_fetch: Vec<u32> = uid_vec.into_iter().rev().take(50).collect();
+  let uid_set = uids_to_fetch.iter().map(|u| u.to_string()).collect::<Vec<_>>().join(",");
 
   let db_path = app
     .path()
@@ -202,7 +201,44 @@ async fn fetch_unseen(app: &AppHandle, session: &mut ImapSession, email: &str) -
     .map(|d| d.join("telegramail.db").to_string_lossy().into_owned());
 
   use futures_util::TryStreamExt as _;
-  while let Some(msg) = messages.try_next().await.map_err(|e| format!("Fetch: {e}"))? {
+
+  // First pass: fetch headers only to filter for Chat-Version messages.
+  // Collect into Vec first so the stream (and its session borrow) is fully dropped
+  // before we open the second fetch.
+  let chat_uids: Vec<u32> = {
+    let mut header_msgs = session
+      .uid_fetch(&uid_set, "BODY.PEEK[HEADER]")
+      .await
+      .map_err(|e| format!("UID FETCH HEADER: {e}"))?;
+
+    let mut found: Vec<u32> = Vec::new();
+    while let Some(msg) = header_msgs.try_next().await.map_err(|e| format!("Fetch header: {e}"))? {
+      if let Some(uid) = msg.uid {
+        if let Some(header_bytes) = msg.header() {
+          let header_str = String::from_utf8_lossy(header_bytes);
+          let unfolded = unfold_headers(&header_str);
+          if unfolded.to_ascii_lowercase().contains("chat-version:") {
+            found.push(uid);
+          }
+        }
+      }
+    }
+    found
+    // header_msgs (and its borrow of session) is dropped here
+  };
+
+  if chat_uids.is_empty() {
+    return Ok(());
+  }
+
+  // Second pass: fetch full body only for Chat messages.
+  let chat_uid_set = chat_uids.iter().map(|u| u.to_string()).collect::<Vec<_>>().join(",");
+  let mut full_msgs = session
+    .uid_fetch(&chat_uid_set, "RFC822")
+    .await
+    .map_err(|e| format!("UID FETCH RFC822: {e}"))?;
+
+  while let Some(msg) = full_msgs.try_next().await.map_err(|e| format!("Fetch body: {e}"))? {
     if let Some(raw) = msg.body() {
       parse_and_emit(app, raw, email, db_path.as_deref()).await;
     }
@@ -211,24 +247,33 @@ async fn fetch_unseen(app: &AppHandle, session: &mut ImapSession, email: &str) -
   Ok(())
 }
 
+/// Unfold RFC 2822 header continuations (CRLF + whitespace → single space).
+fn unfold_headers(raw: &str) -> String {
+  raw.replace("\r\n ", " ").replace("\r\n\t", " ")
+    .replace("\n ", " ").replace("\n\t", " ")
+}
+
 async fn parse_and_emit(app: &AppHandle, raw: &[u8], own_email: &str, db_path: Option<&str>) {
   let raw_str = match std::str::from_utf8(raw) {
     Ok(s) => s,
     Err(_) => return,
   };
 
-  if !raw_str.contains("Chat-Version:") {
-    return;
-  }
-
-  // Split headers / body at first blank line.
-  let (headers_raw, body_raw) = if let Some(pos) = raw_str.find("\r\n\r\n") {
+  // Split headers / body at first blank line (before unfolding, to preserve body).
+  let (headers_section, body_raw) = if let Some(pos) = raw_str.find("\r\n\r\n") {
     (&raw_str[..pos], raw_str[pos + 4..].trim())
   } else if let Some(pos) = raw_str.find("\n\n") {
     (&raw_str[..pos], raw_str[pos + 2..].trim())
   } else {
     return;
   };
+
+  // Unfold MIME header continuations before parsing.
+  let headers_raw = unfold_headers(headers_section);
+
+  if !headers_raw.contains("Chat-Version:") {
+    return;
+  }
 
   let get_header = |name: &str| -> Option<String> {
     let needle = format!("{name}:");
@@ -240,8 +285,17 @@ async fn parse_and_emit(app: &AppHandle, raw: &[u8], own_email: &str, db_path: O
     None
   };
 
+  // Extract just the email address from "Display Name <email@host>" format.
+  let extract_email = |raw_from: &str| -> String {
+    if let (Some(start), Some(end)) = (raw_from.find('<'), raw_from.find('>')) {
+      raw_from[start + 1..end].trim().to_owned()
+    } else {
+      raw_from.trim().to_owned()
+    }
+  };
+
   let from = match get_header("From") {
-    Some(f) => f,
+    Some(f) => extract_email(&f),
     None => return,
   };
   let autocrypt = get_header("Autocrypt");
