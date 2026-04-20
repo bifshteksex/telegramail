@@ -172,8 +172,6 @@ import {
   selectThreadReadState,
 } from '../../selectors/threads';
 import { deleteMessages, updateWithLocalMedia } from '../apiUpdaters/messages';
-import { SMTP_PROVIDERS } from '../../../config/smtpProviders';
-import { IS_TAURI } from '../../../util/browser/globalEnvironment';
 
 const AUTOLOGIN_TOKEN_KEY = 'autologin_token';
 
@@ -369,40 +367,6 @@ addActionHandler('loadMessagesById', async (global, actions, payload): Promise<v
   setGlobal(global);
 });
 
-async function trySendSmtpCopy(
-  global: GlobalState,
-  user: ApiUser | undefined,
-  chat: ApiChat,
-  text: string | undefined,
-) {
-  if (!text) return;
-
-  const { smtpProvider, smtpEmail } = global.settings.byKey;
-  if (!smtpProvider || !smtpEmail) return;
-
-  if (!IS_TAURI) return;
-
-  const chatName = user ? (getUserFullName(user) ?? chat.title) : chat.title;
-
-  try {
-    const providerConfig = SMTP_PROVIDERS[smtpProvider];
-    if (!providerConfig) return;
-
-    await window.tauri.smtpSend({
-      host: providerConfig.host,
-      email: smtpEmail,
-      // Until Phase G (email discovery), send to self as a delivery copy.
-      toEmail: smtpEmail,
-      chatName,
-      chatId: String(chat.id),
-      localRef: String(Date.now()),
-      text,
-    });
-  } catch {
-    // Fire-and-forget: never interrupt message sending
-  }
-}
-
 addActionHandler('sendMessage', async (global, actions, payload): Promise<void> => {
   const { messageList, tabId = getCurrentTabId() } = payload;
 
@@ -434,7 +398,6 @@ addActionHandler('sendMessage', async (global, actions, payload): Promise<void> 
   const user = selectUser(global, chatId!);
   const draft = selectDraft(global, chatId!, threadId!);
 
-  void trySendSmtpCopy(global, user, chat, payload.text);
   const isForwarding = selectTabState(global, tabId).forwardMessages?.messageIds?.length;
 
   const draftReplyInfo = !isForwarding && !isStoryReply ? draft?.replyInfo : undefined;
