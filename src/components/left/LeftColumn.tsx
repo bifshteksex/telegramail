@@ -34,7 +34,6 @@ import ArchivedChats from './ArchivedChats.async';
 import LeftMain from './main/LeftMain';
 import NewChat from './newChat/NewChat.async';
 import Settings from './settings/Settings.async';
-import SmtpMode from './smtp/SmtpMode';
 
 import './LeftColumn.scss';
 
@@ -559,13 +558,10 @@ function LeftColumn({
             onTopicSearch={handleTopicSearch}
             isAccountFrozen={isAccountFrozen}
             isFoldersSidebarShown={isFoldersSidebarShown}
+            isSmtpMode={isSmtpMode}
           />
         );
     }
-  }
-
-  if (isSmtpMode) {
-    return <SmtpMode />;
   }
 
   return (

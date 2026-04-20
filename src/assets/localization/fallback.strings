@@ -2877,8 +2877,6 @@
 "SmtpConnectError" = "Connection failed: {error}";
 "SmtpConnectErrorVpn" = "SMTP ports are blocked by your VPN. Switch Happ (or your VPN) to Proxy mode instead of TUN mode, then try again.";
 "SmtpConnectedBadge" = "SMTP connected";
-
-"SmtpModeTitle" = "Email Mode";
 "SmtpNoChats" = "No email chats yet";
 "SmtpAddContact" = "Add Contact";
 "SmtpContacts" = "Email Contacts";

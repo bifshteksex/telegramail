@@ -2110,6 +2110,24 @@ export interface LangPair {
   'SmtpConnectSuccess': undefined;
   'SmtpConnectErrorVpn': undefined;
   'SmtpConnectedBadge': undefined;
+  'SmtpNoChats': undefined;
+  'SmtpAddContact': undefined;
+  'SmtpContacts': undefined;
+  'SmtpAddContactHint': undefined;
+  'SmtpContactEmailPlaceholder': undefined;
+  'SmtpSendRequest': undefined;
+  'SmtpAccept': undefined;
+  'SmtpPendingRequests': undefined;
+  'SmtpConfirmedContacts': undefined;
+  'SmtpNoContacts': undefined;
+  'SmtpNoMessages': undefined;
+  'SmtpTypeMessage': undefined;
+  'SmtpReconnecting': undefined;
+  'SmtpDisconnected': undefined;
+  'SmtpShareContact': undefined;
+  'SmtpShareContactHint': undefined;
+  'SmtpShowQr': undefined;
+  'SmtpHideQr': undefined;
 }
 
 export interface LangPairWithVariables<V = LangVariable> {

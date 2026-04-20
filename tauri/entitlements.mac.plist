@@ -16,5 +16,9 @@
     <true/>
     <key>com.apple.security.inherit</key>
     <true/>
+    <key>keychain-access-groups</key>
+    <array>
+      <string>$(AppIdentifierPrefix)org.telegramail.Telegramail</string>
+    </array>
   </dict>
 </plist>

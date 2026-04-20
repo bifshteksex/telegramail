@@ -9,8 +9,6 @@ use pgp::ser::Serialize;
 use pgp::types::SecretKeyTrait;
 use smallvec::smallvec;
 
-const KEYCHAIN_SERVICE: &str = "telegramail-pgp";
-
 // ── Key generation ────────────────────────────────────────────────────────────
 
 /// Generate an Ed25519 signing key + X25519 encryption subkey.
@@ -67,24 +65,15 @@ pub fn generate_keypair(email: &str) -> Result<(String, String), String> {
 // ── Keychain storage for own secret key ──────────────────────────────────────
 
 pub fn save_secret_key(email: &str, armored: &str) -> Result<(), String> {
-  keyring::Entry::new(KEYCHAIN_SERVICE, &format!("pgp-secret:{email}"))
-    .map_err(|e| e.to_string())?
-    .set_password(armored)
-    .map_err(|e| e.to_string())
+  super::storage::save_pgp_secret(email, armored)
 }
 
 pub fn load_secret_key(email: &str) -> Result<String, String> {
-  keyring::Entry::new(KEYCHAIN_SERVICE, &format!("pgp-secret:{email}"))
-    .map_err(|e| e.to_string())?
-    .get_password()
-    .map_err(|e| e.to_string())
+  super::storage::load_pgp_secret(email)
 }
 
 pub fn delete_secret_key(email: &str) -> Result<(), String> {
-  keyring::Entry::new(KEYCHAIN_SERVICE, &format!("pgp-secret:{email}"))
-    .map_err(|e| e.to_string())?
-    .delete_credential()
-    .map_err(|e| e.to_string())
+  super::storage::delete_pgp_secret(email)
 }
 
 // ── Autocrypt header ──────────────────────────────────────────────────────────

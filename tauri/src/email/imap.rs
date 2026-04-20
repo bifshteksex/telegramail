@@ -203,16 +203,30 @@ async fn fetch_unseen(app: &AppHandle, session: &mut ImapSession, email: &str) -
   use futures_util::TryStreamExt as _;
 
   // Single-pass: fetch full RFC822 and filter by Chat-Version locally.
-  // This saves one full round-trip compared to a two-pass header+body approach.
-  let mut msgs = session
-    .uid_fetch(&uid_set, "RFC822")
-    .await
-    .map_err(|e| format!("UID FETCH RFC822: {e}"))?;
+  // Collect into Vec so the stream borrow on session is released before uid_store.
+  let fetched: Vec<(u32, Vec<u8>)> = {
+    let mut msgs = session
+      .uid_fetch(&uid_set, "RFC822")
+      .await
+      .map_err(|e| format!("UID FETCH RFC822: {e}"))?;
 
-  while let Some(msg) = msgs.try_next().await.map_err(|e| format!("Fetch body: {e}"))? {
-    if let Some(raw) = msg.body() {
-      parse_and_emit(app, raw, email, db_path.as_deref()).await;
+    let mut acc = Vec::new();
+    while let Some(msg) = msgs.try_next().await.map_err(|e| format!("Fetch body: {e}"))? {
+      if let (Some(uid), Some(raw)) = (msg.uid, msg.body()) {
+        acc.push((uid, raw.to_vec()));
+      }
     }
+    acc
+  }; // stream dropped here, session borrow released
+
+  for (_, raw) in &fetched {
+    parse_and_emit(app, raw, email, db_path.as_deref()).await;
+  }
+
+  // Mark fetched messages as \Seen so they are not re-delivered on reconnect.
+  if !fetched.is_empty() {
+    let seen_set = fetched.iter().map(|(uid, _)| uid.to_string()).collect::<Vec<_>>().join(",");
+    let _ = session.uid_store(&seen_set, "+FLAGS.SILENT (\\Seen)").await;
   }
 
   Ok(())

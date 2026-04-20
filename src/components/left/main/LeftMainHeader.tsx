@@ -49,8 +49,10 @@ type OwnProps = {
   isClosingSearch?: boolean;
   shouldSkipTransition?: boolean;
   isFoldersSidebarShown?: boolean;
+  isSmtpMode?: boolean;
   onSearchQuery: (query: string) => void;
   onReset: NoneToVoidFunction;
+  onAddEmailContact?: NoneToVoidFunction;
 };
 
 type StateProps = {
@@ -95,8 +97,10 @@ const LeftMainHeader = ({
   canSetPasscode,
   isFoldersSidebarShown,
   isForumPanelOpen,
+  isSmtpMode,
   onSearchQuery,
   onReset,
+  onAddEmailContact,
 }: OwnProps & StateProps) => {
   const {
     setGlobalSearchDate,
@@ -106,6 +110,8 @@ const LeftMainHeader = ({
     openSettingsScreen,
     searchMessagesGlobal,
     closeForumPanel,
+    openSmtpMode,
+    closeSmtpMode,
   } = getActions();
 
   const oldLang = useOldLang();
@@ -144,6 +150,14 @@ const LeftMainHeader = ({
 
   const handleForumSearchClick = useLastCallback(() => {
     closeForumPanel();
+  });
+
+  const handleSelectSmtpMode = useLastCallback(() => {
+    openSmtpMode();
+  });
+
+  const handleSelectTelegramMode = useLastCallback(() => {
+    closeSmtpMode();
   });
 
   useHotkeys(useMemo(() => (canSetPasscode ? {
@@ -247,6 +261,20 @@ const LeftMainHeader = ({
 
   return (
     <div className="LeftMainHeader">
+      <div className="modeSwitcher">
+        <button
+          className={buildClassName('modeSwitcherBtn', !isSmtpMode && 'modeSwitcherBtn--active')}
+          onClick={isSmtpMode ? handleSelectTelegramMode : undefined}
+        >
+          Telegram
+        </button>
+        <button
+          className={buildClassName('modeSwitcherBtn', isSmtpMode && 'modeSwitcherBtn--active')}
+          onClick={!isSmtpMode ? handleSelectSmtpMode : undefined}
+        >
+          Email
+        </button>
+      </div>
       <div
         id="LeftMainHeader"
         className="left-header"
@@ -260,33 +288,42 @@ const LeftMainHeader = ({
             isSearchButton && 'forum-search-button',
           )}
         />
-        <SearchInput
-          inputId="telegram-search-input"
-          resultsItemSelector=".LeftSearch .ListItem-button"
-          className={buildClassName(
-            (globalSearchChatId || searchDate) ? 'with-picker-item' : undefined,
-            shouldHideSearch && 'SearchInput--hidden',
-            hasMenu && isFoldersSidebarShown && !IS_WITH_WINDOW_BUTTONS && 'SearchInput--no-left-margin',
-          )}
-          value={isClosingSearch ? undefined : (contactsFilter || searchQuery)}
-          focused={isSearchFocused}
-          isLoading={isLoading || connectionStatusPosition === 'minimized'}
-          spinnerColor={connectionStatusPosition === 'minimized' ? 'yellow' : undefined}
-          spinnerBackgroundColor={connectionStatusPosition === 'minimized' && theme === 'light' ? 'light' : undefined}
-          placeholder={searchInputPlaceholder}
-          autoComplete="off"
-          canClose={Boolean(globalSearchChatId || searchDate)}
-          onChange={onSearchQuery}
-          onReset={onReset}
-          onFocus={handleSearchFocus}
-          onSpinnerClick={connectionStatusPosition === 'minimized' ? toggleConnectionStatus : undefined}
-          onEnter={handleSearchEnter}
-        >
-          {searchContent}
-          <StoryToggler
-            canShow={withStoryToggler}
-          />
-        </SearchInput>
+        {isSmtpMode && (
+          <button className="addEmailContactBtn" onClick={onAddEmailContact}>
+            <Icon name="add-user" />
+            <span>{lang('SmtpAddContact')}</span>
+          </button>
+        )}
+
+        {!isSmtpMode && (
+          <SearchInput
+            inputId="telegram-search-input"
+            resultsItemSelector=".LeftSearch .ListItem-button"
+            className={buildClassName(
+              (globalSearchChatId || searchDate) ? 'with-picker-item' : undefined,
+              shouldHideSearch && 'SearchInput--hidden',
+              hasMenu && isFoldersSidebarShown && !IS_WITH_WINDOW_BUTTONS && 'SearchInput--no-left-margin',
+            )}
+            value={isClosingSearch ? undefined : (contactsFilter || searchQuery)}
+            focused={isSearchFocused}
+            isLoading={isLoading || connectionStatusPosition === 'minimized'}
+            spinnerColor={connectionStatusPosition === 'minimized' ? 'yellow' : undefined}
+            spinnerBackgroundColor={connectionStatusPosition === 'minimized' && theme === 'light' ? 'light' : undefined}
+            placeholder={searchInputPlaceholder}
+            autoComplete="off"
+            canClose={Boolean(globalSearchChatId || searchDate)}
+            onChange={onSearchQuery}
+            onReset={onReset}
+            onFocus={handleSearchFocus}
+            onSpinnerClick={connectionStatusPosition === 'minimized' ? toggleConnectionStatus : undefined}
+            onEnter={handleSearchEnter}
+          >
+            {searchContent}
+            <StoryToggler
+              canShow={withStoryToggler}
+            />
+          </SearchInput>
+        )}
         {isCurrentUserPremium && <StatusButton />}
         {hasPasscode && (
           <Button

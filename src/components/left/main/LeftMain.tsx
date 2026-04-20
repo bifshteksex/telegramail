@@ -14,6 +14,7 @@ import { IS_TOUCH_ENV } from '../../../util/browser/windowEnvironment';
 import buildClassName from '../../../util/buildClassName';
 
 import useInterval from '../../../hooks/schedulers/useInterval';
+import useFlag from '../../../hooks/useFlag';
 import useForumPanelRender from '../../../hooks/useForumPanelRender';
 import useLastCallback from '../../../hooks/useLastCallback';
 import useOldLang from '../../../hooks/useOldLang';
@@ -23,6 +24,7 @@ import Button from '../../ui/Button';
 import Transition from '../../ui/Transition';
 import NewChatButton from '../NewChatButton';
 import LeftSearch from '../search/LeftSearch.async';
+import SmtpMode from '../smtp/SmtpMode';
 import ChatFolders from './ChatFolders';
 import ContactList from './ContactList.async';
 import ForumPanel from './forum/ForumPanel';
@@ -45,6 +47,7 @@ type OwnProps = {
   isAccountFrozen?: boolean;
   onReset: () => void;
   isFoldersSidebarShown?: boolean;
+  isSmtpMode?: boolean;
 };
 
 const TRANSITION_RENDER_COUNT = Object.keys(LeftColumnContent).length / 2;
@@ -68,11 +71,13 @@ const LeftMain: FC<OwnProps> = ({
   onTopicSearch,
   isAccountFrozen,
   isFoldersSidebarShown,
+  isSmtpMode,
 }) => {
   const { openLeftColumnContent } = getActions();
   const [isNewChatButtonShown, setIsNewChatButtonShown] = useState(IS_TOUCH_ENV);
   const [tauriUpdate, setTauriUpdate] = useState<Update>();
   const [isTauriUpdateDownloading, setIsTauriUpdateDownloading] = useState(false);
+  const [isSmtpContactsOpen, openSmtpContacts, closeSmtpContacts] = useFlag();
 
   const {
     shouldRenderForumPanel, handleForumPanelAnimationEnd,
@@ -187,7 +192,7 @@ const LeftMain: FC<OwnProps> = ({
       onMouseLeave={!IS_TOUCH_ENV ? handleMouseLeave : undefined}
     >
       <LeftMainHeader
-        shouldHideSearch={isForumPanelVisible}
+        shouldHideSearch={isForumPanelVisible || isSmtpMode}
         content={content}
         contactsFilter={contactsFilter}
         onSearchQuery={onSearchQuery}
@@ -195,8 +200,15 @@ const LeftMain: FC<OwnProps> = ({
         shouldSkipTransition={shouldSkipTransition}
         isClosingSearch={isClosingSearch}
         isFoldersSidebarShown={isFoldersSidebarShown}
+        isSmtpMode={isSmtpMode}
+        onAddEmailContact={openSmtpContacts}
       />
-      <Transition
+      {isSmtpMode ? (
+        <SmtpMode
+          isContactsOpen={isSmtpContactsOpen}
+          onContactsClose={closeSmtpContacts}
+        />
+      ) : <Transition
         name={shouldSkipTransition ? 'none' : 'zoomFade'}
         renderCount={TRANSITION_RENDER_COUNT}
         activeKey={content}
@@ -231,7 +243,7 @@ const LeftMain: FC<OwnProps> = ({
               return undefined;
           }
         }}
-      </Transition>
+      </Transition>}
       {shouldRenderUpdateButton && (
         <Button
           fluid
@@ -252,13 +264,16 @@ const LeftMain: FC<OwnProps> = ({
           onCloseAnimationEnd={handleForumPanelAnimationEnd}
         />
       )}
-      <NewChatButton
-        isShown={isNewChatButtonShown}
-        onNewPrivateChat={handleSelectContacts}
-        onNewChannel={handleSelectNewChannel}
-        onNewGroup={handleSelectNewGroup}
-        isAccountFrozen={isAccountFrozen}
-      />
+
+      {!isSmtpMode && (
+        <NewChatButton
+          isShown={isNewChatButtonShown}
+          onNewPrivateChat={handleSelectContacts}
+          onNewChannel={handleSelectNewChannel}
+          onNewGroup={handleSelectNewGroup}
+          isAccountFrozen={isAccountFrozen}
+        />
+      )}
     </div>
   );
 };
