@@ -107,6 +107,7 @@ import type {
   StoryViewerOrigin,
   ThemeKey,
   ThreadId,
+  TranslationTone,
   WebPageMediaSize,
 } from '../../types';
 import type { WebApp, WebAppModalStateType, WebAppOutboundEvent } from '../../types/webapp';
@@ -1417,6 +1418,17 @@ export interface ActionPayloads {
     isEnabled: boolean;
   };
 
+  setChatTranslationTone: {
+    chatId: string;
+    tone: TranslationTone;
+  } & WithTabId;
+
+  setMessageTranslationTone: {
+    chatId: string;
+    messageId: number;
+    tone: TranslationTone;
+  } & WithTabId;
+
   // Messages
   setEditingDraft: {
     text?: ApiFormattedText;
@@ -1430,6 +1442,11 @@ export interface ActionPayloads {
     offsetId?: number;
   };
   loadUnreadReactions: {
+    chatId: string;
+    threadId?: ThreadId;
+    offsetId?: number;
+  };
+  loadUnreadPollVotes: {
     chatId: string;
     threadId?: ThreadId;
     offsetId?: number;
@@ -1468,6 +1485,10 @@ export interface ActionPayloads {
     chatId: string;
     threadId?: ThreadId;
   } & WithTabId;
+  focusNextPollVote: {
+    chatId: string;
+    threadId?: ThreadId;
+  } & WithTabId;
   readAllReactions: {
     chatId: string;
     threadId?: ThreadId;
@@ -1476,7 +1497,15 @@ export interface ActionPayloads {
     chatId: string;
     threadId?: ThreadId;
   };
+  readAllPollVotes: {
+    chatId: string;
+    threadId?: ThreadId;
+  };
   markMentionsRead: {
+    chatId: string;
+    messageIds: number[];
+  };
+  markPollVotesRead: {
     chatId: string;
     messageIds: number[];
   };
@@ -1523,6 +1552,7 @@ export interface ActionPayloads {
     chatId: string;
     id: number;
     toLanguageCode?: string;
+    tone?: TranslationTone;
   } & WithTabId;
 
   showOriginalMessage: {
@@ -1534,11 +1564,13 @@ export interface ActionPayloads {
     chatId: string;
     messageIds: number[];
     toLanguageCode?: string;
+    tone?: TranslationTone;
   };
   translateMessages: {
     chatId: string;
     messageIds: number[];
     toLanguageCode?: string;
+    tone?: TranslationTone;
   };
   summarizeMessage: {
     chatId: string;

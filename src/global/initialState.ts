@@ -316,6 +316,7 @@ export const INITIAL_GLOBAL_STATE: GlobalState = {
       smtpProvider: undefined,
       smtpEmail: undefined,
       smtpPort: undefined,
+      translationTone: 'neutral',
     },
     privacy: {},
     botVerificationShownPeerIds: [],
