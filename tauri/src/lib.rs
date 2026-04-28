@@ -172,7 +172,8 @@ pub fn run() {
   let builder = builder.setup(|app| {
     app.manage(AppState::new(AppStateStruct::default()));
 
-    let _main_window = open_new_window(app.handle().clone(), BASE_URL.to_string())
+    #[cfg(desktop)]
+    open_new_window(app.handle().clone(), BASE_URL.to_string())
       .expect("Failed to open main window");
 
     let deeplink = Deeplink::init();
