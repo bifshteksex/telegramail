@@ -1,8 +1,11 @@
 use std::collections::HashMap;
 use std::sync::{LazyLock, Mutex};
 
+use tauri::{LogicalPosition, Manager};
+#[cfg(desktop)]
 use serde_json::json;
-use tauri::{Emitter, LogicalPosition, Manager};
+#[cfg(desktop)]
+use tauri::Emitter;
 #[cfg(desktop)]
 use tauri::webview::DownloadEvent;
 use url::Url;
@@ -96,6 +99,7 @@ pub(crate) fn save_window_url(app: &tauri::AppHandle, window_label: &str) {
   }
 }
 
+#[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
   let builder = tauri::Builder::default();
 
