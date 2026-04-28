@@ -1,5 +1,7 @@
 use log::info;
-use tauri::{Emitter, Manager, UserAttentionType};
+use tauri::{Emitter, Manager};
+#[cfg(desktop)]
+use tauri::UserAttentionType;
 use tauri_plugin_deep_link::DeepLinkExt;
 use url::Url;
 
@@ -36,9 +38,13 @@ impl Deeplink {
           }
         }
 
+        #[cfg(desktop)]
         let _ = window.request_user_attention(Some(UserAttentionType::Informational));
+        #[cfg(desktop)]
         let _ = window.show();
+        #[cfg(desktop)]
         let _ = window.unminimize();
+        #[cfg(desktop)]
         let _ = window.set_focus();
       }
     });
